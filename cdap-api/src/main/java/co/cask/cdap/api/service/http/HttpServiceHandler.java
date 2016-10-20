@@ -16,6 +16,10 @@
 
 package co.cask.cdap.api.service.http;
 
+import co.cask.cdap.api.ProgramLifecycle;
+import co.cask.cdap.api.annotation.TransactionControl;
+import co.cask.cdap.api.annotation.TransactionPolicy;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -56,7 +60,7 @@ import javax.ws.rs.Path;
  *
  * @see HttpContentConsumer
  */
-public interface HttpServiceHandler {
+public interface HttpServiceHandler extends ProgramLifecycle<HttpServiceContext> {
 
   /**
    * Configures this HttpServiceHandler with the given {@link HttpServiceConfigurer}.
@@ -67,17 +71,21 @@ public interface HttpServiceHandler {
   void configure(HttpServiceConfigurer configurer);
 
   /**
-   * Invoked when the Custom User Service using this HttpServiceHandler is initialized.
-   * This method can be used to initialize any user related resources at runtime.
-   *
-   * @param context the HTTP service runtime context
-   * @throws Exception
+   * Invoked whenever a new instance of this HttpServiceHandler is created. Note that this
+   * can happen at any time, because handler instances expire after a period of inactivity
+   * and are recreated when there is need for a new handler to serve an incoming request.
+   * That means that the time it takes to initialize adds to the time it takes to serve the
+   * request. It is therefore recommended to keep this method very lightweight.
    */
+  @Override
+  @TransactionPolicy(TransactionControl.IMPLICIT)
   void initialize(HttpServiceContext context) throws Exception;
 
   /**
-   * Invoked after the Custom User Service using this HttpServiceHandler is destroyed.
-   * Use this method to perform any necessary cleanup.
+   * Invoked whenever an instance of this HttpServiceHandler is destroyed. This may happen
+   * when the service is shut down, or when a handler instance expires due to inactivity.
    */
+  @Override
+  @TransactionPolicy(TransactionControl.IMPLICIT)
   void destroy();
 }

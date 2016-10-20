@@ -18,6 +18,8 @@ package co.cask.cdap.api.service.http;
 
 import co.cask.cdap.api.Transactional;
 import co.cask.cdap.api.TxRunnable;
+import co.cask.cdap.api.annotation.TransactionControl;
+import co.cask.cdap.api.annotation.TransactionPolicy;
 import co.cask.cdap.api.dataset.Dataset;
 
 import java.nio.ByteBuffer;
@@ -61,6 +63,7 @@ public abstract class HttpContentProducer {
    *
    * @throws Exception if there is any error
    */
+  @TransactionPolicy(TransactionControl.IMPLICIT)
   public abstract void onFinish() throws Exception;
 
   /**
@@ -74,5 +77,6 @@ public abstract class HttpContentProducer {
    *
    * @param failureCause the reason of the failure
    */
+  @TransactionPolicy(TransactionControl.IMPLICIT)
   public abstract void onError(Throwable failureCause);
 }

@@ -16,12 +16,14 @@
 
 package co.cask.cdap.internal.app.services;
 
+import co.cask.cdap.api.annotation.TransactionControl;
 import co.cask.cdap.api.common.Bytes;
 import co.cask.cdap.api.metrics.MetricsCollectionService;
 import co.cask.cdap.api.metrics.MetricsContext;
 import co.cask.cdap.api.security.store.SecureStore;
 import co.cask.cdap.api.security.store.SecureStoreManager;
 import co.cask.cdap.api.service.ServiceSpecification;
+import co.cask.cdap.api.service.http.HttpServiceContext;
 import co.cask.cdap.api.service.http.HttpServiceHandler;
 import co.cask.cdap.api.service.http.HttpServiceHandlerSpecification;
 import co.cask.cdap.app.program.Program;
@@ -34,7 +36,7 @@ import co.cask.cdap.common.lang.PropertyFieldSetter;
 import co.cask.cdap.common.logging.LoggingContextAccessor;
 import co.cask.cdap.common.service.ServiceDiscoverable;
 import co.cask.cdap.data2.dataset2.DatasetFramework;
-import co.cask.cdap.internal.app.runtime.DataFabricFacade;
+import co.cask.cdap.data2.transaction.Transactions;
 import co.cask.cdap.internal.app.runtime.DataFabricFacadeFactory;
 import co.cask.cdap.internal.app.runtime.DataSetFieldSetter;
 import co.cask.cdap.internal.app.runtime.MetricsFieldSetter;
@@ -294,16 +296,27 @@ public class ServiceHttpServer extends AbstractIdleService {
   }
 
   private void initHandler(final HttpServiceHandler handler, final BasicHttpServiceContext serviceContext) {
+    TransactionControl txCtrl = Transactions.getTransactionControl(TransactionControl.IMPLICIT, Object.class,
+                                                                   handler, "initialize", HttpServiceContext.class);
     ClassLoader classLoader = setContextCombinedClassLoader(handler);
-    DataFabricFacade dataFabricFacade = dataFabricFacadeFactory.create(program,
-                                                                       serviceContext.getDatasetCache());
     try {
-      dataFabricFacade.createTransactionExecutor().execute(new TransactionExecutor.Subroutine() {
-        @Override
-        public void apply() throws Exception {
-          handler.initialize(serviceContext);
-        }
-      });
+      if (TransactionControl.IMPLICIT == txCtrl) {
+        // it is not obvious but we can't use the serviceContext.execute() here. This is because multiple instances
+        // of the handler may initialize at the same time, and they may conflict with each other. The serviceContext
+        // initialize() does not have a retry strategy, whereas the dataFabricFacade creates an executor with retry.
+        // TODO: make this cleaner and do it for other program types, too.
+        dataFabricFacadeFactory
+          .create(program, serviceContext.getDatasetCache())
+          .createTransactionExecutor()
+          .execute(new TransactionExecutor.Subroutine() {
+            @Override
+            public void apply() throws Exception {
+              handler.initialize(serviceContext);
+            }
+          });
+      } else {
+        handler.initialize(serviceContext);
+      }
     } catch (Throwable t) {
       LOG.error("Exception raised in HttpServiceHandler.initialize of class {}", handler.getClass(), t);
       throw Throwables.propagate(t);
@@ -313,15 +326,23 @@ public class ServiceHttpServer extends AbstractIdleService {
   }
 
   private void destroyHandler(final HttpServiceHandler handler, final BasicHttpServiceContext serviceContext) {
+    TransactionControl txCtrl = Transactions.getTransactionControl(TransactionControl.IMPLICIT,
+                                                                   Object.class, handler, "destroy");
     ClassLoader classLoader = setContextCombinedClassLoader(handler);
-    DataFabricFacade dataFabricFacade = dataFabricFacadeFactory.create(program, serviceContext.getDatasetCache());
     try {
-      dataFabricFacade.createTransactionExecutor().execute(new TransactionExecutor.Subroutine() {
-        @Override
-        public void apply() throws Exception {
-          handler.destroy();
-        }
-      });
+      if (TransactionControl.IMPLICIT == txCtrl) {
+        dataFabricFacadeFactory
+          .create(program, serviceContext.getDatasetCache())
+          .createTransactionExecutor()
+          .execute(new TransactionExecutor.Subroutine() {
+            @Override
+            public void apply() throws Exception {
+              handler.destroy();
+            }
+          });
+      } else {
+        handler.destroy();
+      }
     } catch (Throwable t) {
       LOG.error("Exception raised in HttpServiceHandler.destroy of class {}", handler.getClass(), t);
       // Don't propagate

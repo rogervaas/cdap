@@ -18,6 +18,7 @@ package co.cask.cdap.internal.app.runtime.service.http;
 
 import co.cask.cdap.api.Admin;
 import co.cask.cdap.api.Transactional;
+import co.cask.cdap.api.TxRunnable;
 import co.cask.cdap.api.app.ApplicationSpecification;
 import co.cask.cdap.api.data.DatasetInstantiationException;
 import co.cask.cdap.api.dataset.Dataset;
@@ -726,6 +727,16 @@ public class HttpHandlerGeneratorTest {
     @Override
     public SecureStoreData getSecureData(String namespace, String name) throws Exception {
       return null;
+    }
+
+    @Override
+    public void execute(TxRunnable runnable) throws TransactionFailureException {
+      // nop-op
+    }
+
+    @Override
+    public void execute(int timeoutInSeconds, TxRunnable runnable) throws TransactionFailureException {
+      // no-op
     }
   }
 }
