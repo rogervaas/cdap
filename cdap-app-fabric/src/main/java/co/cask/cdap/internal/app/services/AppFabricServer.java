@@ -196,7 +196,7 @@ public class AppFabricServer extends AbstractIdleService {
           SslHandler sslHandler = sslHandlerFactory.create();
           sslHandler.getEngine().setNeedClientAuth(true);
           sslHandler.setIssueHandshake(true);
-          input.addLast("ssl", sslHandler);
+          input.addFirst("ssl", sslHandler);
           return input;
         }
       });
