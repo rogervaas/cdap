@@ -36,7 +36,7 @@ import javax.ws.rs.Path;
  * Example:
  * <p>
  *   <pre><code>
- *      public class MyHttpHanlder implements HttpServiceHandler {
+ *      public class MyHttpHandler implements HttpServiceHandler {
  *
  *        {@literal @}GET
  *        {@literal @}Path("/ping")
@@ -55,10 +55,29 @@ import javax.ws.rs.Path;
  *      }
  *   </code></pre>
  * <p>
- * To handle HTTP request with large body, it's is better to have the handler method to return
- * a {@link HttpContentConsumer} to avoid running out of memory.
+ * To handle HTTP request with large body, it is better to have the handler method to return
+ * a {@link HttpContentConsumer} to avoid running out of memory. Similarly, to return a response
+ * with a large body, it is preferable to return respond with {@link HttpContentProducer}.
+ *
+ * By default, all handler methods are executed within an implicit transaction, that is, you
+ * can access datasets and perform transactional data operations from the handler method.
+ * In some cases, for example, f the handler does not need to perform data operations, or if
+ * the time it takes to complete all operations may exceed the transaction timeout, it is
+ * better to annotate the method with a different transaction policy, for example:
+ * <p>
+ *        {@literal @}GET
+ *        {@literal @}Path("/ping")
+ *        {@literal @}TransactionPolicy(TransactionControl.EXPLICIT)
+ *        public void process(HttpServiceRequest request, HttpServiceResponder responder) {
+ *          getContext().execute(60, new TxRunnable() {
+ *            // perform data operations
+ *          });
+ *          responder.sendString("Hello World");
+ *        }
+ * </p>
  *
  * @see HttpContentConsumer
+ * @see HttpContentProducer
  */
 public interface HttpServiceHandler extends ProgramLifecycle<HttpServiceContext> {
 

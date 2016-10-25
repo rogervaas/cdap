@@ -20,6 +20,7 @@ import co.cask.cdap.api.Admin;
 import co.cask.cdap.api.Transactional;
 import co.cask.cdap.api.TxRunnable;
 import co.cask.cdap.api.app.ApplicationSpecification;
+import co.cask.cdap.api.data.DatasetContext;
 import co.cask.cdap.api.data.DatasetInstantiationException;
 import co.cask.cdap.api.dataset.Dataset;
 import co.cask.cdap.api.dataset.DatasetProperties;
@@ -731,12 +732,48 @@ public class HttpHandlerGeneratorTest {
 
     @Override
     public void execute(TxRunnable runnable) throws TransactionFailureException {
-      // nop-op
+      execute(30, runnable);
     }
 
     @Override
     public void execute(int timeoutInSeconds, TxRunnable runnable) throws TransactionFailureException {
-      // no-op
+      try {
+        runnable.run(new DatasetContext() {
+          @Override
+          public <T extends Dataset> T getDataset(String name) throws DatasetInstantiationException {
+            throw new UnsupportedOperationException();
+          }
+
+          @Override
+          public <T extends Dataset> T getDataset(String namespace, String name) throws DatasetInstantiationException {
+            throw new UnsupportedOperationException();
+          }
+
+          @Override
+          public <T extends Dataset> T getDataset(String name,
+                                                  Map<String, String> arguments) throws DatasetInstantiationException {
+            throw new UnsupportedOperationException();
+          }
+
+          @Override
+          public <T extends Dataset> T getDataset(String namespace, String name,
+                                                  Map<String, String> arguments) throws DatasetInstantiationException {
+            throw new UnsupportedOperationException();
+          }
+
+          @Override
+          public void releaseDataset(Dataset dataset) {
+            throw new UnsupportedOperationException();
+          }
+
+          @Override
+          public void discardDataset(Dataset dataset) {
+            throw new UnsupportedOperationException();
+          }
+        });
+      } catch (Exception e) {
+        throw new UnsupportedOperationException();
+      }
     }
   }
 }
