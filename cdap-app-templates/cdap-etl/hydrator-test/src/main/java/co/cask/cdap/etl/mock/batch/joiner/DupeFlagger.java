@@ -16,6 +16,7 @@
 
 package co.cask.cdap.etl.mock.batch.joiner;
 
+import co.cask.cdap.api.annotation.Description;
 import co.cask.cdap.api.annotation.Macro;
 import co.cask.cdap.api.annotation.Name;
 import co.cask.cdap.api.annotation.Plugin;
@@ -127,10 +128,12 @@ public class DupeFlagger extends BatchJoiner<StructuredRecord, StructuredRecord,
    */
   public static class Config extends PluginConfig {
     @Macro
+    @Description("input to keep")
     private final String keep;
 
     @Macro
     @Nullable
+    @Description("name of the flag field")
     private final String flagField;
 
     public Config() {
@@ -153,8 +156,8 @@ public class DupeFlagger extends BatchJoiner<StructuredRecord, StructuredRecord,
 
   private static PluginClass getPluginClass() {
     Map<String, PluginPropertyField> properties = new HashMap<>();
-    properties.put("keep", new PluginPropertyField("keep", "", "string", true, false));
-    properties.put("flagField", new PluginPropertyField("flagField", "", "string", false, true));
+    properties.put("keep", new PluginPropertyField("keep", "input to keep", "string", true, false));
+    properties.put("flagField", new PluginPropertyField("flagField", "name of the flag field", "string", false, true));
     return new PluginClass(BatchJoiner.PLUGIN_TYPE, DupeFlagger.NAME, "", DupeFlagger.class.getName(),
                            "config", properties);
   }

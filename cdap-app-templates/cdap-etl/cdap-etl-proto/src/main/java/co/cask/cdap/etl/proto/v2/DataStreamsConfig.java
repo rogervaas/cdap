@@ -70,6 +70,17 @@ public final class DataStreamsConfig extends ETLConfig {
   }
 
   @Override
+  public String toString() {
+    return "DataStreamsConfig{" +
+      "batchInterval='" + batchInterval + '\'' +
+      ", driverResources=" + driverResources +
+      ", extraJavaOpts='" + extraJavaOpts + '\'' +
+      ", disableCheckpoints=" + disableCheckpoints +
+      ", isUnitTest=" + isUnitTest +
+      "} " + super.toString();
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
@@ -85,22 +96,13 @@ public final class DataStreamsConfig extends ETLConfig {
 
     return Objects.equals(batchInterval, that.batchInterval) &&
       Objects.equals(driverResources, that.driverResources) &&
-      Objects.equals(extraJavaOpts, that.extraJavaOpts);
+      Objects.equals(extraJavaOpts, that.extraJavaOpts) &&
+      Objects.equals(disableCheckpoints, that.disableCheckpoints);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), batchInterval, driverResources, extraJavaOpts);
-  }
-
-  @Override
-  public String toString() {
-    return "DataStreamsConfig{" +
-      "batchInterval='" + batchInterval + '\'' +
-      ", driverResources=" + driverResources +
-      ", extraJavaOpts='" + extraJavaOpts + '\'' +
-      ", isUnitTest=" + isUnitTest +
-      "} " + super.toString();
+    return Objects.hash(super.hashCode(), batchInterval, driverResources, extraJavaOpts, disableCheckpoints);
   }
 
   public static Builder builder() {

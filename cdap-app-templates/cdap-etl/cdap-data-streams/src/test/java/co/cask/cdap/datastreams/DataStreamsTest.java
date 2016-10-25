@@ -66,8 +66,8 @@ import java.util.concurrent.TimeoutException;
  */
 public class DataStreamsTest extends HydratorTestBase {
 
-  protected static final ArtifactId APP_ARTIFACT_ID = NamespaceId.DEFAULT.artifact("app", "1.0.0");
-  protected static final ArtifactSummary APP_ARTIFACT = new ArtifactSummary("app", "1.0.0");
+  private static final ArtifactId APP_ARTIFACT_ID = NamespaceId.DEFAULT.artifact("app", "1.0.0");
+  private static final ArtifactSummary APP_ARTIFACT = new ArtifactSummary("app", "1.0.0");
   private static int startCount = 0;
   @ClassRule
   public static final TestConfiguration CONFIG = new TestConfiguration(Constants.Explore.EXPLORE_ENABLED, false);

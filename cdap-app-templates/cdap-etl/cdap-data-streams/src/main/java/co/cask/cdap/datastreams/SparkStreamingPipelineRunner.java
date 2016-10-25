@@ -69,7 +69,7 @@ public class SparkStreamingPipelineRunner extends SparkPipelineRunner {
       // checkpoints. We can work around this in all other pipeline stages by dynamically instantiating the
       // plugin in all DStream functions, but can't for InputDStreams because the InputDStream constructor
       // adds itself to the context dag. Yay for constructors with global side effects.
-      // TODO: figure out how to do this at configure time instead of run time
+      // TODO: (HYDRATOR-1030) figure out how to do this at configure time instead of run time
       MacroEvaluator macroEvaluator = new ErrorMacroEvaluator(
         "Due to spark limitations, macro evaluation is not allowed in streaming sources when checkpointing " +
           "is enabled.");

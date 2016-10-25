@@ -43,8 +43,7 @@ public class DynamicJoinMerge<JOIN_KEY, INPUT_RECORD, OUT>
   public DynamicJoinMerge(DynamicDriverContext dynamicDriverContext) {
     this.dynamicDriverContext = dynamicDriverContext;
   }
-
-
+  
   @Override
   public JavaRDD<OUT> call(JavaPairRDD<JOIN_KEY, List<JoinElement<INPUT_RECORD>>> input,
                            Time batchTime) throws Exception {

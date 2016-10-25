@@ -16,7 +16,6 @@
 
 package co.cask.cdap.etl.mock.batch.joiner;
 
-import co.cask.cdap.api.annotation.Macro;
 import co.cask.cdap.api.annotation.Name;
 import co.cask.cdap.api.annotation.Plugin;
 import co.cask.cdap.api.data.format.StructuredRecord;
